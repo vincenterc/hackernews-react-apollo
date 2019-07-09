@@ -28,13 +28,36 @@ export const FEED_QUERY = gql`
   }
 `;
 
+const NEW_LINKS_SUBSCRIPTION = gql`
+  subscription {
+    newLink {
+      id
+      url
+      description
+      createdAt
+      postedBy {
+        id
+        name
+      }
+      votes {
+        id
+        user {
+          id
+        }
+      }
+    }
+  }
+`;
+
 class LinkList extends Component {
   render() {
     return (
       <Query query={FEED_QUERY} variables={this._getQueryVariables()}>
-        {({ loading, error, data }) => {
+        {({ loading, error, data, subscribeToMore }) => {
           if (loading) return <div>Fetching</div>;
           if (error) return <div>Error</div>;
+
+          this._subscribeToNewLinks(subscribeToMore);
 
           const linksToRender = this._getLinksToRender(data);
           const isNewPage = this.props.location.pathname.includes("new");
@@ -121,6 +144,26 @@ class LinkList extends Component {
       const previousPage = page - 1;
       this.props.history.push(`/new/${previousPage}`);
     }
+  };
+
+  _subscribeToNewLinks = subscribeToMore => {
+    subscribeToMore({
+      document: NEW_LINKS_SUBSCRIPTION,
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        const newLink = subscriptionData.data.newLink;
+        const exists = prev.feed.links.find(({ id }) => id === newLink.id);
+        if (exists) return prev;
+
+        return Object.assign({}, prev, {
+          feed: {
+            links: [newLink, ...prev.feed.links],
+            count: prev.feed.links.length + 1,
+            __typename: prev.feed.__typename
+          }
+        });
+      }
+    });
   };
 }
 
