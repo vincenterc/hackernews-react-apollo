@@ -6,7 +6,7 @@ import { timeDifferenceForDate } from "../utils";
 
 const VOTE_MUTATION = gql`
   mutation VoteMutation($linkId: ID!) {
-    submitVote(linkId: $linkId) {
+    vote(linkId: $linkId) {
       id
       link {
         votes {
@@ -34,12 +34,8 @@ class Link extends Component {
             <Mutation
               mutation={VOTE_MUTATION}
               variables={{ linkId: this.props.link.id }}
-              update={(store, { data: { submitVote } }) =>
-                this.props.updateStoreAfterVote(
-                  store,
-                  submitVote,
-                  this.props.link.id
-                )
+              update={(store, { data: { vote } }) =>
+                this.props.updateStoreAfterVote(store, vote, this.props.link.id)
               }
             >
               {voteMutation => (
@@ -57,7 +53,7 @@ class Link extends Component {
           <div className="f6 lh-copy gray">
             {this.props.link.votes.length} votes | by{" "}
             {this.props.link.postedBy
-              ? this.props.link.postedBy.firstName
+              ? this.props.link.postedBy.name
               : "Unknown"}{" "}
             {timeDifferenceForDate(this.props.link.createdAt)}
           </div>

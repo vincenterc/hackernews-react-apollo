@@ -13,7 +13,7 @@ const FEED_SEARCH_QUERY = gql`
         createdAt
         postedBy {
           id
-          firstName
+          name
         }
         votes {
           id

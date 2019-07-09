@@ -13,7 +13,7 @@ const POST_MUTATION = gql`
       description
       postedBy {
         id
-        firstName
+        name
       }
       votes {
         id
